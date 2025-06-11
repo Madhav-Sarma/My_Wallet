@@ -1,20 +1,22 @@
 {
-  "expo": {
+    "expo": {
     "name": "mobile",
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/₹.png",
+    "icon": "./assets/images/rupee.png",
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "sdkVersion": "53.0.0",
     "ios": {
       "supportsTablet": true
     },
+ 
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/₹.png",
-        "backgroundColor": "rgb(255, 255, 255,1.0)"
+        "foregroundImage": "./assets/images/rupee.png",
+        "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.madhav3.mobile"
@@ -29,7 +31,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/rupee.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
