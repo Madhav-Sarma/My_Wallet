@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Alert } from 'react-native';
+import { Alert } from "react-native";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -10,36 +10,38 @@ export const useTransactions = (userId) => {
     income: 0,
     expense: 0,
     lending: 0,
-    borrowing: 0
+    borrowing: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchTransactions = useCallback(async () => {
+    if (!API_URL || !userId) return;
     try {
       const response = await fetch(`${API_URL}/transactions/${userId}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch transactions');
+        throw new Error("Failed to fetch transactions");
       }
       const data = await response.json();
       setTransactions(data);
     } catch (err) {
       setError(err.message);
     }
-  }, [userId]);
+  }, [API_URL, userId]);
 
   const fetchReport = useCallback(async () => {
+    if (!API_URL || !userId) return;
     try {
       const response = await fetch(`${API_URL}/transactions/report/${userId}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch report');
+        throw new Error("Failed to fetch report");
       }
       const data = await response.json();
       setReport(data);
     } catch (err) {
       setError(err.message);
     }
-  }, [userId]);
+  }, [API_URL, userId]);
 
   const loadData = useCallback(async () => {
     if (!userId) return;
@@ -56,10 +58,10 @@ export const useTransactions = (userId) => {
   const deleteTransaction = async (id) => {
     try {
       const response = await fetch(`${API_URL}/transactions/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       if (!response.ok) {
-        throw new Error('Failed to delete transaction');
+        throw new Error("Failed to delete transaction");
       }
       await loadData();
       Alert.alert("Success", "Transaction deleted successfully");
@@ -70,7 +72,7 @@ export const useTransactions = (userId) => {
 
   useEffect(() => {
     loadData();
-  }, [loadData]);
+  }, [loadData]); // ✅ use loadData directly as it's already memoized
 
   return { transactions, report, loading, error, loadData, deleteTransaction };
 };

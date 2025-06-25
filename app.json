@@ -1,5 +1,5 @@
 {
-    "expo": {
+  "expo": {
     "name": "mobile",
     "slug": "mobile",
     "version": "1.0.0",
@@ -12,7 +12,6 @@
     "ios": {
       "supportsTablet": true
     },
- 
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/rupee.png",
@@ -46,6 +45,12 @@
       "eas": {
         "projectId": "9654ffea-3d0f-4b14-b960-bd51af607173"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/9654ffea-3d0f-4b14-b960-bd51af607173"
     }
   }
 }

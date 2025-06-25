@@ -7,6 +7,8 @@ const baseColors = {
   expense: "#D9534F",
   income: "#4cbb17",
   shadow: "#000000",
+  lending: "#2868c6",
+borrowing: "#3A3D5A",
     lending: "#2868c6",     // same as primary blue
   borrowing: "#3A3D5A",  // darker grey from midnight theme border
 };

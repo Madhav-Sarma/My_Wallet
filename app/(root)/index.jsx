@@ -1,8 +1,16 @@
 import { SignedIn, SignedOut, useUser, useAuth } from '@clerk/clerk-expo';
-import { Link, useRouter  } from 'expo-router';
-import { FlatList, Alert, Text, View, TouchableOpacity, RefreshControl } from 'react-native';
+import { Link, useRouter } from 'expo-router';
+import {
+  FlatList,
+  Alert,
+  Text,
+  View,
+  TouchableOpacity,
+  RefreshControl,
+} from 'react-native';
 import { useTransactions } from '../../hooks/useTransactions';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import LoadingPage from '../../components/LoadingPage';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../../assets/styles/home.styles';
@@ -10,7 +18,6 @@ import { COLORS } from '../../constants/colors';
 import { Header } from '../../components/Header';
 import NoTransactions from '../../components/NoTransactions';
 
-// ✅ Reusable formatter
 const formatAmount = (amount) =>
   `₹${Number(amount || 0).toLocaleString('en-IN', {
     minimumFractionDigits: 2,
@@ -23,7 +30,6 @@ const BalanceCard = ({ report }) => (
     <Text style={styles.balanceAmount}>{formatAmount(report.balance)}</Text>
 
     <View style={styles.balanceRow}>
-      {/* Left Column */}
       <View style={styles.balanceColumn}>
         <View style={styles.statBox}>
           <Text style={styles.balanceStatLabel}>Income</Text>
@@ -39,7 +45,6 @@ const BalanceCard = ({ report }) => (
         </View>
       </View>
 
-      {/* Right Column */}
       <View style={styles.balanceColumn}>
         <View style={styles.statBox}>
           <Text style={styles.balanceStatLabel}>Expense</Text>
@@ -64,7 +69,8 @@ const TransactionItem = ({ transaction, onDelete }) => {
     transaction_category,
     transaction_amount,
     created_at,
-    transaction_type
+    transaction_type,
+    related_user,
   } = transaction;
 
   const isIncome = transaction_type === 'Income';
@@ -75,6 +81,13 @@ const TransactionItem = ({ transaction, onDelete }) => {
     month: 'long',
     year: 'numeric',
   });
+
+  const personLine =
+    transaction_type === 'Lend' || transaction_type === 'Borrow'
+      ? transaction_type === 'Lend'
+        ? `To: ${related_user}`
+        : `From: ${related_user}`
+      : transaction_category;
 
   return (
     <View style={styles.transactionCard}>
@@ -88,7 +101,7 @@ const TransactionItem = ({ transaction, onDelete }) => {
         </View>
         <View style={styles.transactionLeft}>
           <Text style={styles.transactionTitle}>{transaction_title}</Text>
-          <Text style={styles.transactionCategory}>{transaction_category}</Text>
+          <Text style={styles.transactionCategory}>{personLine}</Text>
         </View>
         <View style={styles.transactionRight}>
           <Text style={[styles.transactionAmount, { color: amountColor }]}>
@@ -119,10 +132,20 @@ export default function Page() {
     deleteTransaction,
   } = useTransactions(user?.id);
   const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (user?.id) loadData();
   }, [loadData, user?.id]);
+
+  // ✅ Automatically refresh when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      if (user?.id) {
+        loadData();
+      }
+    }, [user?.id])
+  );
 
   const handleSignOut = async () => {
     try {
@@ -131,28 +154,24 @@ export default function Page() {
       console.error('Error signing out:', err);
     }
   };
-  const router = useRouter();
+
   const handleAddTransaction = () => router.push('/createTransaction');
 
   const handleDeleteTransaction = (id) => {
-    Alert.alert(
-      'Delete Transaction',
-      'Are you sure you want to delete this transaction?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteTransaction(id);
-            } catch (err) {
-              console.error(err);
-            }
-          },
+    Alert.alert('Delete Transaction', 'Are you sure you want to delete this transaction?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteTransaction(id);
+          } catch (err) {
+            console.error(err);
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleReload = async () => {
@@ -161,14 +180,12 @@ export default function Page() {
     setRefreshing(false);
   };
 
-  // Show full page loader only on initial loading (not during pull refresh)
   if (loading && !refreshing) return <LoadingPage />;
 
   const sortedTransactions =
-  [...(transactions || [])]
-    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-    .reverse();
-
+    [...(transactions || [])]
+      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+      .reverse();
 
   return (
     <View style={styles.container}>
@@ -183,9 +200,7 @@ export default function Page() {
             <TransactionItem transaction={item} onDelete={handleDeleteTransaction} />
           )}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
-          ListEmptyComponent={
-            <NoTransactions onAddTransaction={handleAddTransaction} />
-          }
+          ListEmptyComponent={<NoTransactions onAddTransaction={handleAddTransaction} />}
           ListHeaderComponent={
             <>
               <Header user={user} onSignOut={handleSignOut} />
